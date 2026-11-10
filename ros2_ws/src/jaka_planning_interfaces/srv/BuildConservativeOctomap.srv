@@ -1,0 +1,21 @@
+octomap_msgs/OctomapWithPose observed
+uint64 environment_version
+string planning_group
+float64 min_x
+float64 max_x
+float64 min_y
+float64 max_y
+float64 min_z
+float64 max_z
+float64 resolution
+float64 robot_clearance
+float64 initial_seed_radius
+---
+bool success
+string message
+octomap_msgs/OctomapWithPose conservative
+uint64 free_cells
+uint64 unknown_as_occupied_cells
+uint64 observed_occupied_cells
+uint64 robot_carved_cells
+uint64 initial_seed_carved_cells

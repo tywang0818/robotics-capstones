@@ -1,0 +1,31 @@
+# ros2_control controllers consumed by both the gz_ros2_control plugin
+# (when sim_mode:=gazebo) and the standalone controller_manager launched by
+# the teammate's MoveIt config (when sim_mode:=mock).
+#
+# Joint names + interfaces match teammate's MoveIt SRDF so move_group can
+# command jaka_a5_controller exactly the same way in both modes.
+
+controller_manager:
+  ros__parameters:
+    update_rate: 100
+
+    joint_state_broadcaster:
+      type: joint_state_broadcaster/JointStateBroadcaster
+
+    jaka_a5_controller:
+      type: joint_trajectory_controller/JointTrajectoryController
+
+jaka_a5_controller:
+  ros__parameters:
+    joints:
+      - joint_1
+      - joint_2
+      - joint_3
+      - joint_4
+      - joint_5
+      - joint_6
+    command_interfaces:
+      - position
+    state_interfaces:
+      - position
+      - velocity

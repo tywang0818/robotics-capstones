@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>known_free_validator</name>
+  <version>0.1.0</version>
+  <description>Reject JAKA trajectories that enter unknown or occupied OctoMap space.</description>
+  <maintainer email="student@example.com">JAKA Planning Team</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>jaka_planning_interfaces</depend>
+  <depend>geometric_shapes</depend>
+  <depend>moveit_core</depend>
+  <depend>moveit_ros_planning</depend>
+  <depend>octomap</depend>
+  <depend>octomap_msgs</depend>
+  <depend>rclcpp</depend>
+  <depend>sensor_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

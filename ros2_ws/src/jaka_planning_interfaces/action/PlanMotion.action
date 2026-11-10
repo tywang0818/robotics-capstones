@@ -1,0 +1,38 @@
+uint8 JOINT_GOAL=1
+uint8 POSE_GOAL=2
+
+string task_id
+# Exact immutable environment snapshot that must be applied for this task.
+uint64 environment_version
+string planning_group
+string end_effector_link
+
+# Execution normally starts from the current robot state. Explicit start
+# states are useful for plan-only evaluation and must contain all group joints.
+bool use_current_start_state
+sensor_msgs/JointState start_state
+
+uint8 goal_type
+sensor_msgs/JointState joint_goal
+geometry_msgs/PoseStamped pose_goal
+float64 position_tolerance
+float64 orientation_tolerance
+
+bool plan_only
+float64 allowed_planning_time
+uint32 num_planning_attempts
+float64 velocity_scaling
+float64 acceleration_scaling
+---
+bool success
+bool retryable
+string error_type
+bool environment_applied
+uint64 applied_environment_version
+int32 moveit_error_code
+float64 planning_time
+float64 estimated_execution_time
+string message
+moveit_msgs/RobotTrajectory planned_trajectory
+---
+string state

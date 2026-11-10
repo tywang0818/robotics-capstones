@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>octomap_free_region</name>
+  <version>0.0.1</version>
+  <description>
+    Post-process octomap_server's binary output to mark specific
+    unobservable regions (e.g. the structural blind cylinder around
+    a folded scanning arm) as FREE, then republish. Downstream nodes
+    subscribe to the augmented topic transparently.
+  </description>
+  <maintainer email="user@example.com">user</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_cmake</buildtool_depend>
+
+  <depend>rclcpp</depend>
+  <depend>octomap</depend>
+  <depend>octomap_msgs</depend>
+  <depend>visualization_msgs</depend>
+  <depend>std_msgs</depend>
+  <depend>geometry_msgs</depend>
+
+  <export>
+    <build_type>ament_cmake</build_type>
+  </export>
+</package>

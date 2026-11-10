@@ -1,0 +1,134 @@
+<?xml version="1.0"?>
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="jaka_a5">
+  <!-- Kinematics and meshes are adapted from the JAKA ROS V2.2 ROS 1 package. -->
+  <material name="jaka_blue">
+    <color rgba="0.79216 0.81961 0.93333 1"/>
+  </material>
+  <material name="jaka_gray">
+    <color rgba="0.84706 0.84706 0.84706 1"/>
+  </material>
+  <material name="jaka_base">
+    <color rgba="0.86667 0.86667 0.8902 1"/>
+  </material>
+
+  <xacro:macro name="mesh_link" params="name mesh material">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <mesh filename="package://jaka_a5_description/meshes/${mesh}"/>
+        </geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://jaka_a5_description/meshes/${mesh}"/>
+        </geometry>
+      </collision>
+    </link>
+  </xacro:macro>
+
+  <xacro:mesh_link name="base_link" mesh="base_link.STL" material="jaka_base"/>
+  <xacro:mesh_link name="J1" mesh="J1.STL" material="jaka_blue"/>
+  <xacro:mesh_link name="J2" mesh="J2.STL" material="jaka_blue"/>
+  <xacro:mesh_link name="J3" mesh="J3.STL" material="jaka_blue"/>
+  <xacro:mesh_link name="J4" mesh="J4.STL" material="jaka_gray"/>
+  <xacro:mesh_link name="J5" mesh="J5.STL" material="jaka_blue"/>
+  <xacro:mesh_link name="J6" mesh="J6.STL" material="jaka_gray"/>
+  <link name="tool0"/>
+
+  <joint name="joint_1" type="revolute">
+    <origin xyz="0 -0.00022535 0.12015" rpy="0 0 0"/>
+    <parent link="base_link"/>
+    <child link="J1"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.5708" upper="4.7124" effort="2000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_2" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+    <parent link="J1"/>
+    <child link="J2"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.48" upper="4.628" effort="5000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_3" type="revolute">
+    <origin xyz="0.43 0 0" rpy="0 0 0"/>
+    <parent link="J2"/>
+    <child link="J3"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.05" upper="3.05" effort="5000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_4" type="revolute">
+    <origin xyz="0.3685 0 -0.115" rpy="0 0 0"/>
+    <parent link="J3"/>
+    <child link="J4"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.48" upper="4.62" effort="2000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_5" type="revolute">
+    <origin xyz="0 -0.1135 0" rpy="1.5708 -0.00010901 0"/>
+    <parent link="J4"/>
+    <child link="J5"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="3000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_6" type="revolute">
+    <origin xyz="0 0.107 0" rpy="-1.5708 0 -0.00010901"/>
+    <parent link="J5"/>
+    <child link="J6"/>
+    <axis xyz="-0.00010901 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="1000" velocity="3.665"/>
+  </joint>
+  <joint name="tool0_fixed" type="fixed">
+    <parent link="J6"/>
+    <child link="tool0"/>
+  </joint>
+
+  <!-- GenericSystem makes Plan & Execute work without a physical robot. -->
+  <ros2_control name="JakaA5MockSystem" type="system">
+    <hardware>
+      <plugin>mock_components/GenericSystem</plugin>
+    </hardware>
+    <joint name="joint_1">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_2">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">1.5707</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_3">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">-1.5707</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_4">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">1.5707</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_5">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">1.5707</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+    <joint name="joint_6">
+      <command_interface name="position"/>
+      <state_interface name="position">
+        <param name="initial_value">0.0</param>
+      </state_interface>
+      <state_interface name="velocity"/>
+    </joint>
+  </ros2_control>
+</robot>

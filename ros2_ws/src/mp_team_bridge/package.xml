@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>mp_team_bridge</name>
+  <version>0.1.0</version>
+  <description>Team adapters for the integrated JAKA A5 motion-planning workspace.</description>
+  <maintainer email="student@example.com">Motion Planning Integration Team</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>ament_index_python</exec_depend>
+  <exec_depend>jaka_motion_pipeline</exec_depend>
+  <exec_depend>jaka_planning_interfaces</exec_depend>
+  <exec_depend>launch</exec_depend>
+  <exec_depend>launch_ros</exec_depend>
+  <exec_depend>octomap_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

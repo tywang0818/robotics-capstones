@@ -1,0 +1,258 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>RViz 监控台</title>
+<style>
+  :root {
+    --bg: #16181a; --panel: #1e2124; --panel-2: #262a2e; --line: #33383d;
+    --text: #e6e8ea; --muted: #9aa0a6;
+    --ok: #34c759; --warn: #f5a623; --err: #ff3b30; --accent: #3a86ff;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    background: var(--bg); color: var(--text);
+    font: 14px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, "Noto Sans CJK SC", sans-serif;
+    display: flex; flex-direction: column; min-height: 100vh;
+  }
+  header {
+    display: flex; align-items: center; gap: 16px;
+    padding: 10px 16px; background: var(--panel); border-bottom: 1px solid var(--line);
+  }
+  header h1 { font-size: 15px; font-weight: 600; margin: 0; letter-spacing: .3px; }
+  .spacer { flex: 1; }
+  .badge {
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 10px; border-radius: 999px; background: var(--panel-2);
+    border: 1px solid var(--line); font-size: 12px; color: var(--muted);
+  }
+  .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); }
+  .dot.ok { background: var(--ok); } .dot.warn { background: var(--warn); } .dot.err { background: var(--err); }
+  .badge .label { text-transform: none; }
+  button {
+    font: inherit; color: var(--text); background: var(--panel-2);
+    border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px;
+    cursor: pointer;
+  }
+  button:hover:not(:disabled) { border-color: var(--accent); }
+  button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+  button:disabled { opacity: .5; cursor: not-allowed; }
+  .btn-primary { background: #234; border-color: #2b4a6b; }
+  .btn-warn { background: #3a2f14; border-color: #5a481f; }
+  .btn-danger { background: #3a1c1a; border-color: #5a2723; }
+
+  .seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+  .seg-btn {
+    border: none; border-radius: 0; background: var(--panel-2); color: var(--muted);
+    padding: 6px 12px; font-size: 12px; cursor: pointer;
+  }
+  .seg-btn + .seg-btn { border-left: 1px solid var(--line); }
+  .seg-btn.active { background: var(--accent); color: #fff; }
+  .seg-btn:hover:not(.active) { color: var(--text); }
+
+  main { flex: 1; display: flex; gap: 12px; padding: 12px; align-items: stretch; }
+  .stage {
+    flex: 1; min-width: 0; background: #000; border: 1px solid var(--line);
+    border-radius: 10px; overflow: hidden; position: relative;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .stage img { width: 100%; height: 100%; object-fit: contain; display: block; }
+  .stage .overlay {
+    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
+    flex-direction: column; gap: 10px; color: var(--muted); background: rgba(0,0,0,.6);
+  }
+  .stage.disconnected .overlay { display: flex; }
+  .stage.disconnected img { opacity: .25; }
+
+  aside {
+    width: 260px; flex-shrink: 0; background: var(--panel); border: 1px solid var(--line);
+    border-radius: 10px; padding: 14px; display: flex; flex-direction: column; gap: 12px;
+  }
+  aside.hidden { display: none; }
+  aside h2 { font-size: 13px; color: var(--muted); font-weight: 600; margin: 0 0 4px; }
+  .controls { display: flex; flex-direction: column; gap: 10px; }
+  .controls button { width: 100%; text-align: center; padding: 12px; }
+  .state-line { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+  .msg { font-size: 12px; color: var(--muted); min-height: 16px; word-break: break-all; }
+  .msg.err { color: var(--err); }
+
+  dialog {
+    background: var(--panel); color: var(--text); border: 1px solid var(--line);
+    border-radius: 12px; padding: 18px; width: min(92vw, 340px);
+  }
+  dialog::backdrop { background: rgba(0,0,0,.55); }
+  dialog h3 { margin: 0 0 12px; font-size: 15px; }
+  dialog label { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; }
+  dialog input {
+    width: 100%; padding: 9px 10px; background: var(--panel-2); color: var(--text);
+    border: 1px solid var(--line); border-radius: 8px; font: inherit;
+  }
+  dialog input:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+  .dlg-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 16px; }
+  .login-err { color: var(--err); font-size: 12px; min-height: 16px; margin-top: 8px; }
+
+  @media (max-width: 760px) {
+    main { flex-direction: column; }
+    aside { width: auto; }
+  }
+</style>
+</head>
+<body>
+  <header>
+    <h1>RViz 监控台</h1>
+    <span class="badge"><span id="videoDot" class="dot"></span><span id="videoText" class="label">视频连接中…</span></span>
+    <span class="badge"><span id="stateDot" class="dot"></span><span id="stateText" class="label">状态未知</span></span>
+    <div class="seg" id="sourceSeg">
+      <button class="seg-btn active" data-source="yolo">YOLO 检测</button>
+      <button class="seg-btn" data-source="camera">相机原图</button>
+    </div>
+    <span class="spacer"></span>
+    <button id="loginBtn">管理员登录</button>
+    <button id="logoutBtn" style="display:none">注销</button>
+  </header>
+
+  <main>
+    <div id="stage" class="stage">
+      <img id="video" alt="视频流" src="/stream/rviz.mjpg?source=yolo" />
+      <div class="overlay"><div>RViz 未连接</div><div style="font-size:12px">正在自动重试…</div></div>
+    </div>
+
+    <aside id="adminPanel" class="hidden">
+      <h2>控制</h2>
+      <div class="state-line"><span id="panelDot" class="dot"></span><span id="panelState">状态未知</span></div>
+      <div class="controls">
+        <button id="startBtn" class="btn-primary">开始 / 继续</button>
+        <button id="pauseBtn" class="btn-warn">暂停</button>
+        <button id="resetBtn" class="btn-danger">复位</button>
+      </div>
+      <div id="ctlMsg" class="msg"></div>
+    </aside>
+  </main>
+
+  <dialog id="loginDlg">
+    <h3>管理员登录</h3>
+    <form id="loginForm" method="dialog">
+      <label for="u">用户名</label>
+      <input id="u" name="username" autocomplete="username" />
+      <label for="p">密码</label>
+      <input id="p" name="password" type="password" autocomplete="current-password" />
+      <div id="loginErr" class="login-err"></div>
+      <div class="dlg-actions">
+        <button type="button" id="loginCancel">取消</button>
+        <button type="submit" id="loginSubmit" class="btn-primary">登录</button>
+      </div>
+    </form>
+  </dialog>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const STATE_LABEL = { idle:"空闲", running:"运行中", paused:"已暂停", resetting:"复位中", unknown:"状态未知" };
+const STATE_CLASS = { idle:"", running:"ok", paused:"warn", resetting:"warn", unknown:"" };
+
+let isAdmin = false, isLocal = false, busy = false;
+let videoSource = "yolo";   // 当前视频源:yolo=YOLO 检测输出, camera=相机原镜头
+
+function setVideo(connected) {
+  $("stage").classList.toggle("disconnected", !connected);
+  $("videoDot").className = "dot " + (connected ? "ok" : "err");
+  $("videoText").textContent = connected ? "视频正常" : "视频断开";
+}
+function setState(state) {
+  const label = STATE_LABEL[state] || STATE_LABEL.unknown;
+  const cls = STATE_CLASS[state] || "";
+  $("stateText").textContent = label; $("stateDot").className = "dot " + cls;
+  if (isAdmin) { $("panelState").textContent = label; $("panelDot").className = "dot " + cls; }
+}
+
+async function pollStatus() {
+  try {
+    const r = await fetch("/api/status?source=" + videoSource, { cache: "no-store" });
+    const j = await r.json();
+    setVideo(j.video === "connected");
+    setState(j.state);
+  } catch { setVideo(false); }
+}
+
+async function refreshSession() {
+  try {
+    const j = await (await fetch("/api/auth/session", { cache: "no-store" })).json();
+    isAdmin = !!j.admin; isLocal = !!j.is_local;
+  } catch { isAdmin = false; }
+  $("adminPanel").classList.toggle("hidden", !isAdmin);
+  $("logoutBtn").style.display = isAdmin ? "" : "none";
+  $("loginBtn").style.display = isAdmin ? "none" : "";
+}
+
+function setBusy(b) {
+  busy = b;
+  for (const id of ["startBtn","pauseBtn","resetBtn"]) $(id).disabled = b;
+}
+function showMsg(text, isErr) {
+  const el = $("ctlMsg"); el.textContent = text || ""; el.classList.toggle("err", !!isErr);
+}
+
+async function control(path, confirmText) {
+  if (busy) return;
+  if (confirmText && !confirm(confirmText)) return;
+  setBusy(true); showMsg("执行中…", false);
+  try {
+    const r = await fetch(path, { method: "POST" });
+    const j = await r.json().catch(() => ({}));
+    if (!r.ok || j.ok === false) {
+      showMsg(j.message || j.detail || ("请求失败(" + r.status + ")"), true);
+    } else {
+      showMsg(j.message || "完成", false);
+      setState(j.state);   // 以后端返回状态为准
+    }
+  } catch (e) {
+    showMsg("网络错误:" + e, true);
+  } finally { setBusy(false); }
+}
+
+$("startBtn").onclick = () => control("/api/control/start");
+$("pauseBtn").onclick = () => control("/api/control/pause");
+$("resetBtn").onclick = () => control("/api/control/reset", "确认复位系统?此操作会中断当前探索。");
+
+$("loginBtn").onclick = () => { $("loginErr").textContent = ""; $("loginDlg").showModal(); $("u").focus(); };
+$("loginCancel").onclick = () => $("loginDlg").close();
+$("loginForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  $("loginSubmit").disabled = true; $("loginErr").textContent = "";
+  try {
+    const body = new URLSearchParams({ username: $("u").value, password: $("p").value });
+    const r = await fetch("/api/auth/login", { method: "POST", body });
+    if (!r.ok) {
+      const j = await r.json().catch(() => ({}));
+      $("loginErr").textContent = j.detail || ("登录失败(" + r.status + ")");
+    } else {
+      $("loginDlg").close(); $("p").value = ""; await refreshSession();
+    }
+  } catch (e) { $("loginErr").textContent = "网络错误:" + e; }
+  finally { $("loginSubmit").disabled = false; }
+});
+$("logoutBtn").onclick = async () => { await fetch("/api/auth/logout", { method: "POST" }); await refreshSession(); };
+
+// 视频流 onerror → 触发断开态(status 轮询也会兜底)
+$("video").addEventListener("error", () => setVideo(false));
+
+// 视频源切换:YOLO 检测输出 ↔ 相机原镜头。改 img.src 重连对应 MJPEG 流。
+function switchSource(src) {
+  if (src === videoSource) return;
+  videoSource = src;
+  document.querySelectorAll("#sourceSeg .seg-btn").forEach((b) =>
+    b.classList.toggle("active", b.dataset.source === src));
+  // 带时间戳强制浏览器断开旧流、重连新源。
+  $("video").src = "/stream/rviz.mjpg?source=" + src + "&t=" + Date.now();
+  pollStatus();
+}
+document.querySelectorAll("#sourceSeg .seg-btn").forEach((b) =>
+  (b.onclick = () => switchSource(b.dataset.source)));
+
+refreshSession();
+pollStatus();
+setInterval(pollStatus, 2000);
+</script>
+</body>
+</html>

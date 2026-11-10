@@ -1,0 +1,129 @@
+<?xml version="1.0" ?>
+<!--
+  Close-cube exploration scene.
+
+  Single opaque cube placed very close to the JAKA A5 arm so that:
+    - Initial folded-pose depth camera sees the cube's FRONT (-X) face
+      and part of the top / sides.
+    - The cube's BACK (+X) face is fully occluded from the initial pose.
+    - Arm needs to reach AROUND (over the top / around a side) to
+      observe the back face.
+
+  Cube:
+    center pose:  (0.40, 0.00, 0.10)
+    size:         0.20 x 0.20 x 0.20   (LxWxH)
+    AABB (world): x=[0.30, 0.50]   y=[-0.10, 0.10]   z=[0.00, 0.20]
+    front face:   x = 0.30   (about 30 cm from base_link origin)
+    back face:    x = 0.50
+    bottom face:  z = 0.00   (resting on the ground plane)
+
+  Reachability (JAKA A5 reach ~0.85 m, workspace shell 0.60-0.85):
+    - Camera BEHIND back-face head-on: (0.50 + standoff=0.35, 0, 0.10)
+      = (0.85, 0, 0.10)  distance ~0.86 m  → at reach boundary →
+      likely SURROGATE projection onto reach*0.82 sphere.
+    - Camera FROM SIDE: (0.40, 0.42, 0.15)  distance ~0.60 m  → within
+      reach. Wrist rotates so camera looks -Y at the back-side edge.
+    - Camera FROM TOP-BACK: (0.50, 0.15, 0.45)  distance ~0.68 m  →
+      within reach.  Looks down at back-top corner.
+
+  Design intent:
+    Purely tests "reach around occlusion". No hollow interior, no
+    multiple objects. The cube is a solid 20 cm box, so the entire
+    back-face shell (roughly 0.20x0.20 = 0.04 m^2) is the target the
+    algorithm must uncover.
+
+  Backdrop wall (added 2026-07-16, Plan A):
+    thin opaque panel at x=0.90, y=[-0.70,0.70], z=[0,1.20],
+    thickness 0.02 m.  Once observed as occupied, it bounds the
+    unknown-air region behind the cube to a ~40cm-deep cavity, so the
+    back-face frontier no longer competes with an unbounded open-sky
+    cluster under HPP-PT's cluster-size penalty.
+
+  Color: cube = bright red (target). Wall = dark blue (background).
+-->
+<sdf version="1.9">
+  <world name="exploration_scene_close_cube">
+
+    <plugin filename="gz-sim-physics-system"
+            name="gz::sim::systems::Physics"/>
+    <plugin filename="gz-sim-user-commands-system"
+            name="gz::sim::systems::UserCommands"/>
+    <plugin filename="gz-sim-scene-broadcaster-system"
+            name="gz::sim::systems::SceneBroadcaster"/>
+    <plugin filename="gz-sim-sensors-system"
+            name="gz::sim::systems::Sensors">
+      <render_engine>ogre2</render_engine>
+    </plugin>
+
+    <light type="directional" name="sun">
+      <cast_shadows>true</cast_shadows>
+      <pose>0 0 10 0 0 0</pose>
+      <diffuse>0.9 0.9 0.9 1</diffuse>
+      <specular>0.2 0.2 0.2 1</specular>
+      <direction>-0.4 0.4 -0.9</direction>
+    </light>
+
+    <!-- ground -->
+    <model name="ground_plane">
+      <static>true</static>
+      <link name="link">
+        <visual name="v">
+          <geometry><plane><normal>0 0 1</normal><size>10 10</size></plane></geometry>
+          <material>
+            <ambient>0.78 0.78 0.78 1</ambient>
+            <diffuse>0.85 0.85 0.85 1</diffuse>
+          </material>
+        </visual>
+        <collision name="c">
+          <geometry><plane><normal>0 0 1</normal><size>10 10</size></plane></geometry>
+        </collision>
+      </link>
+    </model>
+
+    <!-- Close cube: 20cm solid box, front face 30cm from base_link,
+         bottom resting on ground plane (z=0). -->
+    <model name="close_cube">
+      <static>true</static>
+      <pose>0.40 0.0 0.10  0 0 0</pose>
+      <link name="link">
+        <visual name="v">
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+          <material>
+            <ambient>0.75 0.10 0.10 1</ambient>
+            <diffuse>0.90 0.15 0.15 1</diffuse>
+            <specular>0.10 0.10 0.10 1</specular>
+          </material>
+        </visual>
+        <collision name="c">
+          <geometry><box><size>0.20 0.20 0.20</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+
+    <!-- Backdrop wall (Plan A): opaque panel 40 cm behind the cube.
+         Purpose: bound the free-air frontier region between cube-back
+         (x=0.50) and wall (x=0.90). Once the wall is observed as
+         occupied, HPP-PT's size-penalty no longer sees a huge unknown
+         air cluster behind the cube — the back-face frontier becomes
+         a small bounded cluster that gets picked. Wall is dark blue
+         so it visually reads as background, not target. -->
+    <model name="backdrop_wall">
+      <static>true</static>
+      <pose>0.90 0.0 0.60  0 0 0</pose>
+      <link name="link">
+        <visual name="v">
+          <geometry><box><size>0.02 1.40 1.20</size></box></geometry>
+          <material>
+            <ambient>0.10 0.15 0.30 1</ambient>
+            <diffuse>0.15 0.20 0.40 1</diffuse>
+            <specular>0.05 0.05 0.05 1</specular>
+          </material>
+        </visual>
+        <collision name="c">
+          <geometry><box><size>0.02 1.40 1.20</size></box></geometry>
+        </collision>
+      </link>
+    </model>
+
+  </world>
+</sdf>

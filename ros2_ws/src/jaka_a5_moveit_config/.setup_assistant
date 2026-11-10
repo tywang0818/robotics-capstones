@@ -1,0 +1,10 @@
+moveit_setup_assistant_config:
+  urdf:
+    package: jaka_a5_description
+    relative_path: urdf/jaka_a5.urdf.xacro
+  srdf:
+    relative_path: config/jaka_a5.srdf
+  package_settings:
+    author_name: JAKA A5 Demo Maintainer
+    author_email: student@example.com
+    generated_timestamp: 2026-06-11T00:00:00.000000

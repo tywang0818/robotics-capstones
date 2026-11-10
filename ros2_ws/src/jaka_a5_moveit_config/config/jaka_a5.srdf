@@ -1,0 +1,36 @@
+<?xml version="1.0"?>
+<robot name="jaka_a5">
+  <virtual_joint name="virtual_joint" type="fixed" parent_frame="world" child_link="base_link"/>
+
+  <group name="jaka_a5">
+    <chain base_link="base_link" tip_link="tool0"/>
+  </group>
+
+  <group_state name="zero" group="jaka_a5">
+    <joint name="joint_1" value="0"/>
+    <joint name="joint_2" value="0"/>
+    <joint name="joint_3" value="0"/>
+    <joint name="joint_4" value="0"/>
+    <joint name="joint_5" value="0"/>
+    <joint name="joint_6" value="0"/>
+  </group_state>
+  <group_state name="ready" group="jaka_a5">
+    <joint name="joint_1" value="0"/>
+    <joint name="joint_2" value="1.5707"/>
+    <joint name="joint_3" value="-1.5707"/>
+    <joint name="joint_4" value="1.5707"/>
+    <joint name="joint_5" value="1.5707"/>
+    <joint name="joint_6" value="0"/>
+  </group_state>
+
+  <disable_collisions link1="base_link" link2="J1" reason="Adjacent"/>
+  <disable_collisions link1="J1" link2="J2" reason="Adjacent"/>
+  <disable_collisions link1="J1" link2="J4" reason="Never"/>
+  <disable_collisions link1="J2" link2="J3" reason="Adjacent"/>
+  <disable_collisions link1="J3" link2="J4" reason="Adjacent"/>
+  <disable_collisions link1="J3" link2="J5" reason="Never"/>
+  <disable_collisions link1="J4" link2="J5" reason="Adjacent"/>
+  <disable_collisions link1="J4" link2="J6" reason="Never"/>
+  <disable_collisions link1="J5" link2="J6" reason="Adjacent"/>
+  <disable_collisions link1="J6" link2="tool0" reason="Adjacent"/>
+</robot>

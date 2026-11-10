@@ -1,0 +1,348 @@
+<?xml version="1.0"?>
+<!--
+  JAKA A5 + end-effector-mounted Intel RealSense D435 RGB-D camera.
+
+  Kinematics, meshes, and joint structure are copied verbatim from
+  jaka_a5_description/urdf/jaka_a5.urdf.xacro so we never need to modify the
+  teammate's package. The mesh references continue to point at the
+  jaka_a5_description package so we share STL files.
+
+  Hardware backend is controlled by the xacro arg `sim_mode`:
+    - sim_mode:=mock    -> mock_components/GenericSystem (default; works with
+                          the teammate's integration_test, no Gazebo needed)
+    - sim_mode:=gazebo  -> gz_ros2_control (drives the arm inside Gazebo
+                          Harmonic; Gazebo also simulates the D435 sensor)
+
+  Robot name stays as "jaka_a5" so the teammate's MoveIt SRDF still matches.
+-->
+<robot xmlns:xacro="http://www.ros.org/wiki/xacro" name="jaka_a5">
+
+  <xacro:arg name="sim_mode" default="mock"/>
+  <xacro:property name="sim_mode" value="$(arg sim_mode)"/>
+
+  <!-- xacro has `pi` built in; no need to redefine. -->
+
+  <!-- ============================================================ -->
+  <!--                    Materials                                  -->
+  <!-- ============================================================ -->
+  <material name="jaka_blue"><color rgba="0.79216 0.81961 0.93333 1"/></material>
+  <material name="jaka_gray"><color rgba="0.84706 0.84706 0.84706 1"/></material>
+  <material name="jaka_base"><color rgba="0.86667 0.86667 0.8902 1"/></material>
+  <material name="d435_body"><color rgba="0.1 0.1 0.1 1"/></material>
+
+  <!-- ============================================================ -->
+  <!--           World root link (anchors the robot in Gazebo)       -->
+  <!-- ============================================================ -->
+  <!-- A massless `world` link bolted to base_link does two things:
+         1. Anchors base_link in Gazebo so gravity does not tip the arm.
+         2. Avoids the KDL warning: KDL refuses to load a URDF whose
+            root link has inertia (base_link DOES have inertia). -->
+  <link name="world"/>
+  <!-- The `world` link is treated as Gazebo's world frame, so the spawn
+       -z argument cannot move the robot. Apply the desired floor offset
+       here instead. The JAKA base_link mesh has its visual origin a few
+       centimetres above the link origin, so a small negative z brings the
+       base flush with z=0 (ground). Tweak this single number if needed. -->
+  <xacro:property name="base_z_offset" value="0.0"/>
+  <joint name="world_fixed" type="fixed">
+    <parent link="world"/>
+    <child link="base_link"/>
+    <origin xyz="0 0 ${base_z_offset}" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============================================================ -->
+  <!--                    JAKA A5 links (mesh)                       -->
+  <!-- ============================================================ -->
+  <!-- Mesh link macro that REQUIRES an inertial block. Gazebo Harmonic
+       silently drops links without inertial when converting URDF -> SDF,
+       which causes the entire kinematic chain to disappear from the
+       simulation. Inertial values are copied verbatim from the original
+       JAKA A5 ROS 1 URDF (CAD-derived, accurate). -->
+  <xacro:macro name="mesh_link" params="name mesh material *inertial">
+    <link name="${name}">
+      <visual>
+        <geometry>
+          <mesh filename="package://jaka_a5_description/meshes/${mesh}"/>
+        </geometry>
+        <material name="${material}"/>
+      </visual>
+      <collision>
+        <geometry>
+          <mesh filename="package://jaka_a5_description/meshes/${mesh}"/>
+        </geometry>
+      </collision>
+      <xacro:insert_block name="inertial"/>
+    </link>
+  </xacro:macro>
+
+  <xacro:mesh_link name="base_link" mesh="base_link.STL" material="jaka_base">
+    <inertial>
+      <origin xyz="0.0028167 -0.00019454 0.019544" rpy="0 0 0"/>
+      <mass value="0.52663"/>
+      <inertia ixx="0.0006297" ixy="6.7091E-08" ixz="3.4682E-06"
+               iyy="0.00095727" iyz="2.4476E-07" izz="0.0014514"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <xacro:mesh_link name="J1" mesh="J1.STL" material="jaka_blue">
+    <inertial>
+      <origin xyz="-2.5186E-07 0.0033226 -0.001509" rpy="0 0 0"/>
+      <mass value="15.135"/>
+      <inertia ixx="0.044302" ixy="1.5349E-07" ixz="-6.1966E-07"
+               iyy="0.043091" iyz="1.4326E-05" izz="0.030523"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <xacro:mesh_link name="J2" mesh="J2.STL" material="jaka_blue">
+    <inertial>
+      <origin xyz="0.215 4.9016E-09 -0.14314" rpy="0 0 0"/>
+      <mass value="5.7891"/>
+      <inertia ixx="0.013095" ixy="-4.1856E-09" ixz="2.9241E-08"
+               iyy="0.20279" iyz="2.1723E-09" izz="0.19928"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <xacro:mesh_link name="J3" mesh="J3.STL" material="jaka_blue">
+    <inertial>
+      <origin xyz="0.17601 -7.8489E-07 -0.0097984" rpy="0 0 0"/>
+      <mass value="2.5808"/>
+      <inertia ixx="0.0032112" ixy="1.1156E-07" ixz="-0.0022739"
+               iyy="0.05921" iyz="3.3121E-08" izz="0.058511"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <xacro:mesh_link name="J4" mesh="J4.STL" material="jaka_gray">
+    <inertial>
+      <origin xyz="-2.1463E-06 -0.0059512 0.0026789" rpy="0 0 0"/>
+      <mass value="5.5377"/>
+      <inertia ixx="0.0092004" ixy="1.17E-07" ixz="-1.3683E-08"
+               iyy="0.0052083" iyz="-8.5741E-05" izz="0.0089125"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <xacro:mesh_link name="J5" mesh="J5.STL" material="jaka_blue">
+    <inertial>
+      <origin xyz="-2.2875E-08 -0.0015344 -0.0023275" rpy="0 0 0"/>
+      <mass value="0.81207"/>
+      <inertia ixx="0.0016825" ixy="2.829E-09" ixz="-1.1984E-08"
+               iyy="0.00074766" iyz="3.2415E-06" izz="0.0016452"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <xacro:mesh_link name="J6" mesh="J6.STL" material="jaka_gray">
+    <inertial>
+      <origin xyz="3.1532E-05 -1.4302E-05 -0.02023" rpy="0 0 0"/>
+      <mass value="1.336"/>
+      <inertia ixx="0.00066124" ixy="-6.979E-07" ixz="-6.4232E-07"
+               iyy="0.00066646" iyz="8.1119E-07" izz="0.0010673"/>
+    </inertial>
+  </xacro:mesh_link>
+
+  <link name="tool0"/>
+
+  <!-- ============================================================ -->
+  <!--                    JAKA A5 joints                             -->
+  <!-- ============================================================ -->
+  <joint name="joint_1" type="revolute">
+    <origin xyz="0 -0.00022535 0.12015" rpy="0 0 0"/>
+    <parent link="base_link"/><child link="J1"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.5708" upper="4.7124" effort="2000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_2" type="revolute">
+    <origin xyz="0 0 0" rpy="1.5708 0 0"/>
+    <parent link="J1"/><child link="J2"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.48" upper="4.628" effort="5000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_3" type="revolute">
+    <origin xyz="0.43 0 0" rpy="0 0 0"/>
+    <parent link="J2"/><child link="J3"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.05" upper="3.05" effort="5000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_4" type="revolute">
+    <origin xyz="0.3685 0 -0.115" rpy="0 0 0"/>
+    <parent link="J3"/><child link="J4"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-1.48" upper="4.62" effort="2000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_5" type="revolute">
+    <origin xyz="0 -0.1135 0" rpy="1.5708 -0.00010901 0"/>
+    <parent link="J4"/><child link="J5"/>
+    <axis xyz="0 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="3000" velocity="3.665"/>
+  </joint>
+  <joint name="joint_6" type="revolute">
+    <origin xyz="0 0.107 0" rpy="-1.5708 0 -0.00010901"/>
+    <parent link="J5"/><child link="J6"/>
+    <axis xyz="-0.00010901 0 1"/>
+    <limit lower="-3.14" upper="3.14" effort="1000" velocity="3.665"/>
+  </joint>
+  <joint name="tool0_fixed" type="fixed">
+    <parent link="J6"/><child link="tool0"/>
+  </joint>
+
+  <!-- ============================================================ -->
+  <!--               RealSense D435 RGB-D camera                     -->
+  <!-- ============================================================ -->
+
+  <!-- Approximate D435 housing: 90 x 25 x 25 mm. -->
+  <xacro:property name="d435_x" value="0.025"/>
+  <xacro:property name="d435_y" value="0.090"/>
+  <xacro:property name="d435_z" value="0.025"/>
+
+  <!-- Camera body link. Attached to tool0 (the end-effector frame).
+       Rotation aligns camera_link +X (Gazebo's sensor "looking" direction
+       by default) with tool0 +Z (the flange outward direction), so the
+       camera sees what is in front of the end-effector.
+
+       IMPORTANT: the box visual/collision are SHIFTED forward by half the
+       camera depth (d435_x/2) so that the back face of the box sits exactly
+       at camera_link's origin. This way the camera_mount_joint origin is
+       literally "where the back of the camera touches the flange", which
+       makes it trivial to glue the camera flush against the end-effector. -->
+  <link name="camera_link">
+    <visual>
+      <origin xyz="${d435_x/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${d435_x} ${d435_y} ${d435_z}"/>
+      </geometry>
+      <material name="d435_body"/>
+    </visual>
+    <collision>
+      <origin xyz="${d435_x/2} 0 0" rpy="0 0 0"/>
+      <geometry>
+        <box size="${d435_x} ${d435_y} ${d435_z}"/>
+      </geometry>
+    </collision>
+    <inertial>
+      <mass value="0.072"/>
+      <inertia ixx="1e-4" ixy="0" ixz="0" iyy="1e-4" iyz="0" izz="1e-4"/>
+    </inertial>
+  </link>
+
+  <!-- Mount the camera so its back face touches tool0's flange. Because the
+       JAKA URDF places tool0 at the J6 joint axis (not at the physical
+       flange surface), we offset by `cam_back_z` along tool0's +Z so the
+       camera back lands on what visually looks like the J6 face. Tweak this
+       single number if it still floats / overlaps. -->
+  <xacro:property name="cam_back_z" value="0.0"/>
+  <joint name="camera_mount_joint" type="fixed">
+    <parent link="tool0"/>
+    <child link="camera_link"/>
+    <origin xyz="0 0 ${cam_back_z}" rpy="0 ${-pi/2} 0"/>
+  </joint>
+
+  <!-- camera_optical_frame: in standard ROS this is rotated relative to
+       camera_link so that Z=forward, X=right, Y=down (OpenCV convention).
+       HOWEVER, Gazebo Harmonic's <optical_frame_id> tag (set on the sensor
+       below) ONLY relabels the PointCloud2 header.frame_id; it does NOT
+       rotate the underlying data into OpenCV convention. The data Gazebo
+       emits is still in camera_link convention (X=forward=depth).
+       Verified empirically: a downward-looking camera at z=0.443 produces
+       X range +0.18..+0.443 (= ground depth) and symmetric Y/Z (= image
+       axes). With the standard (-pi/2, 0, -pi/2) optical rotation, the
+       depth axis ended up mapped to world +X, so the ground appeared as
+       a vertical wall in front of the robot in OctoMap.
+       Fix: make camera_optical_frame an identity child of camera_link so
+       the TF chain matches what Gazebo actually publishes. -->
+  <link name="camera_optical_frame"/>
+  <joint name="camera_optical_joint" type="fixed">
+    <parent link="camera_link"/>
+    <child link="camera_optical_frame"/>
+    <origin xyz="0 0 0" rpy="0 0 0"/>
+  </joint>
+
+  <!-- ============================================================ -->
+  <!--   Hardware backend (controlled by xacro arg `sim_mode`)       -->
+  <!-- ============================================================ -->
+
+  <!-- Mock backend: pure software, no physics. Lets MoveIt "execute"
+       trajectories without Gazebo, which is what the teammate's
+       integration_test relies on. -->
+  <xacro:if value="${sim_mode == 'mock'}">
+    <ros2_control name="JakaA5MockSystem" type="system">
+      <hardware>
+        <plugin>mock_components/GenericSystem</plugin>
+      </hardware>
+      <xacro:macro name="mock_joint" params="name initial">
+        <joint name="${name}">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">${initial}</param>
+          </state_interface>
+          <state_interface name="velocity"/>
+        </joint>
+      </xacro:macro>
+      <xacro:mock_joint name="joint_1" initial="0.0"/>
+      <xacro:mock_joint name="joint_2" initial="1.5707"/>
+      <xacro:mock_joint name="joint_3" initial="-1.5707"/>
+      <xacro:mock_joint name="joint_4" initial="1.5707"/>
+      <xacro:mock_joint name="joint_5" initial="1.5707"/>
+      <xacro:mock_joint name="joint_6" initial="0.0"/>
+    </ros2_control>
+  </xacro:if>
+
+  <!-- Gazebo backend: gz_ros2_control plugin drives the arm inside Gazebo
+       Harmonic; Gazebo also simulates the D435 sensor below. -->
+  <xacro:if value="${sim_mode == 'gazebo'}">
+    <ros2_control name="JakaA5GazeboSystem" type="system">
+      <hardware>
+        <plugin>gz_ros2_control/GazeboSimSystem</plugin>
+      </hardware>
+      <xacro:macro name="gz_joint" params="name initial">
+        <joint name="${name}">
+          <command_interface name="position"/>
+          <state_interface name="position">
+            <param name="initial_value">${initial}</param>
+          </state_interface>
+          <state_interface name="velocity"/>
+        </joint>
+      </xacro:macro>
+      <!-- Sim spawn pose = phase-1 start of the initial scan (vertical arm,
+           camera pointing straight down). Matches the taught real-arm
+           pose so sim and hardware start each session identically. -->
+      <xacro:gz_joint name="joint_1" initial="-1.5707"/>
+      <xacro:gz_joint name="joint_2" initial="1.5707"/>
+      <xacro:gz_joint name="joint_3" initial="0.0"/>
+      <xacro:gz_joint name="joint_4" initial="0.0"/>
+      <xacro:gz_joint name="joint_5" initial="1.5707"/>
+      <xacro:gz_joint name="joint_6" initial="0.0"/>
+    </ros2_control>
+
+    <!-- gz_ros2_control plugin: drives the controller_manager INSIDE Gazebo
+         Harmonic so MoveIt's trajectories actually move the arm. -->
+    <gazebo>
+      <plugin filename="libgz_ros2_control-system.so"
+              name="gz_ros2_control::GazeboSimROS2ControlPlugin">
+        <parameters>$(find jaka_exploration_description)/config/ros2_controllers.yaml</parameters>
+      </plugin>
+    </gazebo>
+
+    <!-- D435 RGB-D sensor (Gazebo Harmonic). Publishes one combined RGB-D
+         stream that ros_gz_bridge can split into ROS 2 topics. -->
+    <gazebo reference="camera_link">
+      <sensor name="d435" type="rgbd_camera">
+        <camera>
+          <horizontal_fov>1.518</horizontal_fov>  <!-- 87 deg, D435 depth -->
+          <image>
+            <width>640</width>
+            <height>480</height>
+            <format>R8G8B8</format>
+          </image>
+          <clip>
+            <near>0.1</near>
+            <far>10.0</far>
+          </clip>
+          <optical_frame_id>camera_optical_frame</optical_frame_id>
+        </camera>
+        <always_on>1</always_on>
+        <update_rate>30</update_rate>
+        <visualize>true</visualize>
+        <topic>camera</topic>
+      </sensor>
+    </gazebo>
+  </xacro:if>
+
+</robot>

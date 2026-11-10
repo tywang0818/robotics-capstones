@@ -1,0 +1,30 @@
+target_detection_node:
+  ros__parameters:
+    model_path: "/tmp/yolov8n.pt"
+    target_class_names: ["bottle"]
+    confidence_threshold: 0.5
+    device: "auto"
+
+    rgb_topic: "/camera/image_rel"
+    depth_topic: "/camera/depth_image"
+    camera_info_topic: "/camera/camera_info"
+
+    found_topic: "/target/found"
+    pose_topic: "/target/pose"
+    marker_topic: "/target/marker"
+    status_topic: "/target/status"
+    detections_topic: "/target/detections"
+
+    output_frame: "world"
+    use_tf: true
+    require_tf: false
+    sync_tolerance_ms: 100.0
+    min_depth_m: 0.05
+    max_depth_m: 5.0
+    min_valid_depth_pixels: 20
+    sticky_found: true
+    found_publish_period_s: 0.5
+    marker_scale_m: 0.08
+    publish_all_detections: false
+    detections_min_confidence: 0.25
+    detections_publish_period_s: 0.0

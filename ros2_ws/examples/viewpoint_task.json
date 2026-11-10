@@ -1,0 +1,29 @@
+{
+  "task_id": "inspect_example_octomap_mid_side",
+  "environment_version": 1,
+  "use_current_start_state": false,
+  "start_joint_state": {
+    "names": [
+      "joint_1",
+      "joint_2",
+      "joint_3",
+      "joint_4",
+      "joint_5",
+      "joint_6"
+    ],
+    "positions": [0.0, 1.5707, -1.5707, 1.5707, 1.5707, 0.0]
+  },
+  "goal": {
+    "type": "viewpoint",
+    "frame_id": "world",
+    "position": [0.42, -0.34, 0.52],
+    "look_at": [0.45, 0.0, 0.45]
+  },
+  "position_tolerance": 0.08,
+  "orientation_tolerance": 3.14,
+  "plan_only": true,
+  "allowed_planning_time": 20.0,
+  "num_planning_attempts": 40,
+  "velocity_scaling": 0.15,
+  "acceleration_scaling": 0.15
+}

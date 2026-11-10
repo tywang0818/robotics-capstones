@@ -1,0 +1,23 @@
+environment_bridge:
+  ros__parameters:
+    input_topic: /team/optimized_environment_json
+    output_topic: /known_environment
+    status_topic: /team/environment_status_json
+
+decision_bridge:
+  ros__parameters:
+    input_topic: /team/viewpoint_task_json
+    known_environment_topic: /known_environment
+    action_name: /plan_motion
+    feedback_topic: /team/motion_feedback_json
+    result_topic: /team/motion_result_json
+    default_planning_group: jaka_a5
+    default_end_effector_link: tool0
+    default_position_tolerance: 0.02
+    default_orientation_tolerance: 0.15
+    default_planning_time: 10.0
+    default_planning_attempts: 20
+    default_velocity_scaling: 0.2
+    default_acceleration_scaling: 0.2
+    active_task_timeout_sec: 240.0
+    cancel_timeout_sec: 5.0

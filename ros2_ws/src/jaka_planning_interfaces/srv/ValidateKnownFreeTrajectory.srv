@@ -1,0 +1,12 @@
+uint64 environment_version
+string planning_group
+moveit_msgs/RobotTrajectory trajectory
+float64 interpolation_step
+float64 link_sample_step
+float64 clearance
+---
+bool valid
+string reason
+uint64 checked_samples
+uint64 unknown_samples
+uint64 occupied_samples

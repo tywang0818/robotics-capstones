@@ -1,0 +1,12 @@
+{
+  "task_id": "explicit_camera_pose",
+  "environment_version": 1,
+  "goal": {
+    "type": "pose",
+    "frame_id": "world",
+    "position": [0.45, 0.0, 0.65],
+    "orientation": [0.0, 1.0, 0.0, 0.0]
+  },
+  "plan_only": true
+}
+

@@ -1,0 +1,43 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>jaka_exploration_core</name>
+  <version>0.0.1</version>
+  <description>
+    Exploration core for the JAKA A5 + D435 simulation:
+    custom Gazebo world(s), real-time OctoMap glue, frontier extraction,
+    viewpoint sampler, and the exploration state machine. Drives the
+    teammate's motion-planning module through the agreed JSON contract.
+  </description>
+  <maintainer email="user@example.com">user</maintainer>
+  <license>BSD-3-Clause</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>sensor_msgs</exec_depend>
+  <exec_depend>geometry_msgs</exec_depend>
+  <exec_depend>visualization_msgs</exec_depend>
+  <exec_depend>octomap_msgs</exec_depend>
+  <exec_depend>tf2_ros</exec_depend>
+  <exec_depend>control_msgs</exec_depend>
+  <exec_depend>trajectory_msgs</exec_depend>
+
+  <exec_depend>jaka_exploration_description</exec_depend>
+  <exec_depend>jaka_a5_description</exec_depend>
+  <exec_depend>jaka_a5_moveit_config</exec_depend>
+  <exec_depend>jaka_motion_pipeline</exec_depend>
+  <exec_depend>known_free_validator</exec_depend>
+  <exec_depend>mp_team_bridge</exec_depend>
+  <exec_depend>octomap_server</exec_depend>
+  <exec_depend>ros_gz_sim</exec_depend>
+  <exec_depend>ros_gz_bridge</exec_depend>
+  <exec_depend>hppt_boundary_ros</exec_depend>
+  <exec_depend>moveit_ros_move_group</exec_depend>
+  <exec_depend>moveit_configs_utils</exec_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+  <exec_depend>octomap_rviz_plugins</exec_depend>
+</package>

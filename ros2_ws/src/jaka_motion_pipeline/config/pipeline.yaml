@@ -1,0 +1,31 @@
+motion_planner:
+  ros__parameters:
+    environment_topic: /known_environment
+    planning_action: /plan_motion
+    move_group_action: /move_action
+    apply_scene_service: /apply_planning_scene
+    scene_service_timeout_sec: 10.0
+    move_group_server_timeout_sec: 10.0
+    move_group_goal_response_timeout_sec: 10.0
+    move_group_result_timeout_sec: 180.0
+    move_group_cancel_timeout_sec: 5.0
+    execute_trajectory_action: /execute_trajectory
+    execute_result_timeout_sec: 180.0
+    known_free_validation_service: /validate_known_free_trajectory
+    known_free_validation_timeout_sec: 20.0
+    known_free_interpolation_step: 0.08
+    known_free_link_sample_step: 0.02
+    known_free_clearance: 0.06
+    conservative_map_service: /build_conservative_octomap
+    conservative_map_timeout_sec: 30.0
+    conservative_map_resolution: 0.03
+    conservative_robot_clearance: 0.10
+    conservative_initial_seed_radius: 0.25
+    planning_bounds: [-0.8, 1.2, -1.0, 1.0, 0.0, 1.6]
+    known_free_exempt_task_prefixes: [initial_scan_]
+    default_planning_group: jaka_a5
+    default_end_effector_link: tool0
+    default_planning_time: 5.0
+    default_planning_attempts: 10
+    default_velocity_scaling: 0.2
+    default_acceleration_scaling: 0.2

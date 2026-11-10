@@ -1,0 +1,20 @@
+semantic_inference_node:
+  ros__parameters:
+    config_path: ""
+    checkpoint_path: "/root/ros2_ws/model"
+    image_size: 512
+    label_space: "ade150"
+    device: "auto"
+
+    rgb_topic: "/camera/image_rel"
+    depth_topic: "/camera/depth_image"
+    camera_info_topic: "/camera/camera_info"
+    semantic_points_topic: "/semantic_frontier/semantic_points"
+    relevance_heatmap_topic: "/semantic_frontier/relevance_heatmap"
+
+    output_frame: ""
+    sync_tolerance_ms: 100.0
+    max_depth_m: 5.0
+    stride: 4
+    min_relevance_prob: 0.0
+    publish_heatmap: true
