@@ -1,0 +1,76 @@
+# Local agent instructions and metadata
+AGENTS.md
+**/AGENTS.md
+.agents/
+.codex/
+
+# Editors and operating systems
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Python environments, caches, tests, and packaging
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.py[cod]
+*$py.class
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+.coverage
+.coverage.*
+htmlcov/
+.tox/
+.nox/
+build/
+dist/
+*.egg-info/
+
+# ROS 2 / colcon generated files
+install/
+log/
+ros2_ws/log/
+ros2_ws/maps/
+ros2_ws/model/
+ros2_ws/runtime_reports/
+ros2_ws/examples/*.generated.json
+
+# CMake generated files
+CMakeFiles/
+CMakeCache.txt
+cmake_install.cmake
+compile_commands.json
+
+# Local project materials; keep only directory documentation in Git
+docs/references/*
+!docs/references/README.md
+docs/projects/*
+!docs/projects/README.md
+
+# Local datasets and generated outputs; keep only directory documentation
+data/raw/*
+!data/raw/README.md
+data/processed/*
+!data/processed/README.md
+outputs/*
+!outputs/README.md
+docker/wheels/
+*.whl
+
+# Runtime logs and crash dumps
+*.log
+*.bag
+*.db3
+*.mcap
+core
+core.*
+
+# session test logs (root-owned, do not commit)
+_testlogs*/
